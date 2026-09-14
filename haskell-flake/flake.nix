@@ -4,9 +4,18 @@
     flake-parts.url = "github:hercules-ci/flake-parts";
     haskell-flake.url = "github:srid/haskell-flake";
   };
-  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
+  outputs =
+    inputs@{
+      self,
+      nixpkgs,
+      flake-parts,
+      ...
+    }:
     flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = nixpkgs.lib.systems.flakeExposed;
+      # Restricted to x86_64-linux: `nix flake show`/`check` validate `apps.<system>.example`
+      # by realising the derivation for that system, which needs a registered builder for
+      # foreign systems (e.g. aarch64-darwin) that plain CI runners don't have.
+      systems = [ "x86_64-linux" ];
       imports = [ inputs.haskell-flake.flakeModule ];
 
       perSystem = { self', pkgs, ... }: {
